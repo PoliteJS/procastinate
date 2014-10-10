@@ -1,0 +1,45 @@
+{
+  "name": "politejs-workspace",
+  "version": "0.4.2",
+  "description": "Single Page Application Workspace",
+  "main": "Gruntfile.js",
+  "keywords": [
+    "single page application",
+    "boilerplate",
+    "compiler",
+    "builder",
+    "jquery",
+    "jqm",
+    "jquery mobile"
+  ],
+  "author": {
+    "name": "Marco Pegoraro",
+    "url": "http://movableapp.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PoliteJS/workspace"
+  },
+  "licenses": [
+    {
+      "type": "MIT"
+    }
+  ],
+  "devDependencies": {
+    "grunt": "~0.4.x",
+    "grunt-browserify": "~2.0.x",
+    "grunt-cleanempty": "~0.2.x",
+    "grunt-contrib-clean": "~0.5.x",
+    "grunt-contrib-copy": "~0.5.x",
+    "grunt-contrib-cssmin": "~0.9.x",
+    "grunt-contrib-less": "~0.10.x",
+    "grunt-contrib-uglify": "~0.4.x",
+    "grunt-contrib-watch": "~0.6.x",
+    "grunt-workspace": "~0.2.x"
+  },
+  "dependencies": {
+    "jqb-extend": "0.0.1",
+    "jqb-lifecycle": "0.0.0",
+    "uuid": "^2.0.1"
+  }
+}
