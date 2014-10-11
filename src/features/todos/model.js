@@ -1,6 +1,7 @@
 
 var uuid = require('uuid');
 var time = require('time');
+var subscribable = require('jqb-subscribable');
 
 var defaultValues = {
     etag: 0,
@@ -11,7 +12,9 @@ var defaultValues = {
 
 function Todo(data) {
     
-    this.title = data.title;
+    this.__channel = subscribable.create();
+    
+    this.title = data.title || '';
     
     if (data.id) {
         this.id = data.id;
@@ -51,6 +54,32 @@ function Todo(data) {
     
 }
 
+Todo.prototype.serialize = function() {
+    return {
+        id: this.id,
+        etag: this.etag,
+        status: this.status,
+        date: this.date.getTime(),
+        title: this.title,
+        skipDate: this.skipDate ? this.skipDate.getTime() : '',
+        skipCount: this.skipCount
+    };
+};
+
+Todo.prototype.toJSON = function() {
+    return JSON.stringify(this.serialize());
+};
+
+Todo.prototype.on = function(evt, cb) {
+    return this.__channel.on(evt, cb);
+};
+
+Todo.prototype.dispose = function() {
+    this.__channel.dispose();
+};
+
+
+
 
 
 
@@ -66,7 +95,9 @@ Todo.prototype.getDate = function() {
 
 
 
-
+Todo.prototype.isEqual = function(todo) {
+    return this.toJSON() === todo.toJSON();
+};
 
 Todo.prototype.isDone = function() {
     return this.status;
@@ -102,13 +133,110 @@ Todo.prototype.isTomorrow = function() {
 
 
 Todo.prototype.update = function(data) {
-    this.etag++;
+    var self = this;
+    var before = {};
+    
+    // this is good refactoring to show to silvia!
+    ['title','status','skipCount','skipDate'].forEach(function(key) {
+        if (data[key] !== undefined) {
+            before[key] = self[key];
+            self[key] = data[key];
+        }    
+    });
+    
+//    if (data.title !== undefined) {
+//        before.title = this.title;
+//        this.title = data.title;
+//    }
+//    if (data.status !== undefined) {
+//        before.status = this.status;
+//        this.status = data.status;
+//    }
+//    if (data.skipCount !== undefined) {
+//        before.skipCount = this.skipCount;
+//        this.skipCount = data.skipCount;
+//    }
+//    if (data.skipDate !== undefined) {
+//        before.skipDate = this.skipDate;
+//        this.skipDate = data.skipDate;
+//    }
+    
+    if (Object.keys(before).length > 0) {
+        this.etag++;
+        this.__channel.emit('change', this, before);
+        return before;
+    }
+    
+    return false;
 };
 
-Todo.prototype.tomorrow = function(data) {
-    this.skipCount++;
+
+
+
+
+
+
+
+
+
+
+
+
+Todo.prototype.toggle = function() {
+    this.update({
+        status: !this.status
+    });
+    this.__channel.emit('change:status', this, this.status);
 };
 
+Todo.prototype.tomorrow = function() {
+    if (this.isArchived()) {
+        return false;
+    }
+    if (this.isTomorrow()) {
+        return false;
+    }
+    var changes = this.update({
+        skipCount: this.skipCount + 1,
+        skipDate: time.tomorrow()
+    });
+    this.__channel.emit('change:list', this, 'tomorrow', changes);
+    if (this.isArchived()) {
+        this.__channel.emit('archived', this);
+    }
+    return changes;
+};
+
+Todo.prototype.today = function() {
+    if (this.isArchived()) {
+        return false;
+    }
+    if (this.isToday()) {
+        return false;
+    }
+    var changes = this.update({
+        skipCount: this.skipCount - 1,
+        skipDate: null
+    });
+    this.__channel.emit('change:list', this, 'today', changes);
+    return changes;
+};
+
+Todo.prototype.restore = function() {
+    if (this.isToday()) {
+        return false;
+    }
+    if (this.isTomorrow()) {
+        return false;
+    }
+    var changes = this.update({
+        skipCount: 0,
+        skipDate: null
+    });
+    this.__channel.emit('change:list', this, 'today', changes);
+    this.__channel.emit('unarchived', this);
+    return changes;
+};
 
 
 module.exports = Todo;
