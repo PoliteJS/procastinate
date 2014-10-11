@@ -1,5 +1,6 @@
 
 var uuid = require('uuid');
+var time = require('time');
 
 var defaultValues = {
     etag: 0,
@@ -10,33 +11,33 @@ var defaultValues = {
 
 function Todo(data) {
     
-    if (data.id !== undefined) {
+    this.title = data.title;
+    
+    if (data.id) {
         this.id = data.id;
     } else {
         this.id = uuid.v4();
     }
     
-    if (data.etag !== undefined) {
+    if (data.etag) {
         this.etag = data.etag;
     } else {
         this.etag = defaultValues.etag;
     }
     
-    this.title = data.title;
-    
-    if (data.status !== undefined) {
+    if (data.status) {
         this.status = data.status;
     } else {
         this.status = defaultValues.status;
     }
     
-    if (data.date !== undefined) {
+    if (data.date) {
         this.date = new Date(data.date);
     } else {
         this.date = new Date();
     }
     
-    if (data.skipCount !== undefined) {
+    if (data.skipCount) {
         this.skipCount = data.skipCount;
     } else {
         this.skipCount = defaultValues.skipCount;
@@ -51,6 +52,9 @@ function Todo(data) {
 }
 
 
+
+
+
 Todo.prototype.getTitle = function() {
     return this.title;
 };
@@ -59,14 +63,45 @@ Todo.prototype.getDate = function() {
     return this.date;
 };
 
+
+
+
+
+
 Todo.prototype.isDone = function() {
     return this.status;
 };
 
+Todo.prototype.isArchived = function() {
+    return this.skipCount >= 5;
+};
+
+Todo.prototype.isToday = function() {
+    if (this.isArchived()) {
+        return false;
+    }
+    if (!this.skipDate) {
+        return true;
+    }
+    return time.isPast(this.skipDate);
+};
+
+Todo.prototype.isTomorrow = function() {
+    if (this.isArchived()) {
+        return false;
+    }
+    if (this.isToday()) {
+        return false;
+    }
+    return true;
+};
+
+
+
+
+
+
 Todo.prototype.update = function(data) {
-    
-    this.title = data.title;
-    
     this.etag++;
 };
 

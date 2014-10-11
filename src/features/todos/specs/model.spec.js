@@ -1,4 +1,6 @@
 
+var time = require('time');
+
 var TodoModel = require('todos/model');
 
 describe('model "Todo"', function() {
@@ -141,8 +143,139 @@ describe('model "Todo"', function() {
             expect(todo1.skipCount - skipCount).to.equal(1);
         });
         
+    });
+    
+    
+    
+    
+    describe('isArchived', function() {
         
+        var todo1, todo2;
+        
+        beforeEach(function() {
+            todo1 = new TodoModel({
+                title: 'foo',
+                skipCount: 5
+            });
+            todo2 = new TodoModel({
+                title: 'faa',
+                skipCount: 4
+            });
+        });
+        
+        it('a new item should never be archived', function() {
+            var todo = new TodoModel({});
+            expect(todo.isArchived()).to.be.false;
+        });
+        
+        it('a new item should be archived after 5 postponing', function() {
+            expect(todo1.isArchived()).to.be.true;
+        });
+        
+        it('a new item should be archived after the 5th postponing action', function() {
+            todo2.tomorrow();
+            expect(todo2.isArchived()).to.be.true;
+        });
+    
+    });
+    
+    
+    
+    
+    describe('isToday', function() {
+        
+        var todayDate = new Date(2014, 9, 15, 12, 22);
+        var inTodayDate = new Date(2014, 9, 15, 17, 22);
+        
+        beforeEach(function() {
+            time.init();
+            time.setToday(todayDate);
+        });
+        
+        after(function() {
+            time.init();
+        });
+        
+        it('a new item should be created in the same day', function() {
+            var todo = new TodoModel({});
+            expect(todo.isToday()).to.be.true;
+        });
+        
+        it('an archived items should not be in today', function() {
+            var todo = new TodoModel({
+                skipCount: 5
+            });
+            expect(todo.isToday()).to.be.false;
+        });
+        
+        it('an item which was postponed should NOT be in today', function() {
+            var todo = new TodoModel({
+                date: todayDate.getTime(),
+                skipDate: inTodayDate.getTime()
+            });
+            expect(todo.isToday()).to.be.false;
+        });
+        
+        it('in item which was postponed the day before should be in today', function() {
+            time.setToday(time.tomorrow());
+            var todo = new TodoModel({
+                date: todayDate.getTime(),
+                skipDate: inTodayDate.getTime()
+            });
+            expect(todo.isToday()).to.be.true;
+        });
         
     });
+    
+    
+    
+    
+    
+    describe('isTomorrow', function() {
+    
+        var todayDate = new Date(2014, 9, 15, 12, 22);
+        var inTodayDate = new Date(2014, 9, 15, 17, 22);
+        
+        beforeEach(function() {
+            time.init();
+            time.setToday(todayDate);
+        });
+        
+        after(function() {
+            time.init();
+        });
+        
+        it('a new item should be created in the same day', function() {
+            var todo = new TodoModel({});
+            expect(todo.isTomorrow()).to.be.false;
+        });
+        
+        it('an archived items should not be in tomorrow', function() {
+            var todo = new TodoModel({
+                skipCount: 5
+            });
+            expect(todo.isTomorrow()).to.be.false;
+        });
+        
+        it('an item which was postponed should be be in tomorrow', function() {
+            var todo = new TodoModel({
+                date: todayDate.getTime(),
+                skipDate: inTodayDate.getTime()
+            });
+            expect(todo.isTomorrow()).to.be.true;
+        });
+        
+        it('in item which was postponed the day before should NOT be in tomorrow', function() {
+            time.setToday(time.tomorrow());
+            var todo = new TodoModel({
+                date: todayDate.getTime(),
+                skipDate: inTodayDate.getTime()
+            });
+            expect(todo.isTomorrow()).to.be.false;
+        });
+    
+    });
+    
+    
     
 });
