@@ -136,30 +136,12 @@ Todo.prototype.update = function(data) {
     var self = this;
     var before = {};
     
-    // this is good refactoring to show to silvia!
     ['title','status','skipCount','skipDate'].forEach(function(key) {
         if (data[key] !== undefined) {
             before[key] = self[key];
             self[key] = data[key];
         }    
     });
-    
-//    if (data.title !== undefined) {
-//        before.title = this.title;
-//        this.title = data.title;
-//    }
-//    if (data.status !== undefined) {
-//        before.status = this.status;
-//        this.status = data.status;
-//    }
-//    if (data.skipCount !== undefined) {
-//        before.skipCount = this.skipCount;
-//        this.skipCount = data.skipCount;
-//    }
-//    if (data.skipDate !== undefined) {
-//        before.skipDate = this.skipDate;
-//        this.skipDate = data.skipDate;
-//    }
     
     if (Object.keys(before).length > 0) {
         this.etag++;
