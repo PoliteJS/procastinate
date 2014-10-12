@@ -40,6 +40,7 @@
   "dependencies": {
     "jqb-extend": "0.0.1",
     "jqb-lifecycle": "0.0.0",
+    "jqb-subscribable": "0.0.0",
     "uuid": "^2.0.1"
   }
 }
