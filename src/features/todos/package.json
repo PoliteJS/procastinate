@@ -1,5 +1,6 @@
 {
   "exports" : [
-    "model"
+    "model",
+    "repository"
   ]
 }
