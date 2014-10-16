@@ -59,12 +59,23 @@ function removeTodo(todo, synced) {
 }
 
 function watch(cb) {
-	var ticket;
-	repository.list().forEach(cb);
-	ticket = channel.on('^added:todo', cb);
+	var t1, t2;
+	repository.list().forEach(function(model) {
+		cb('add', model);
+	});
+
+	t1 = channel.on('^added:todo', function(model) {
+		cb('add', model);
+	});
+
+	t2 = channel.on('^removed:todo', function(model) {
+		cb('remove', model);
+	});
+
 	return {
 		dispose: function() {
-			ticket.dispose();
+			t1.dispose();
+			t2.dispose();
 		}
 	};
 }

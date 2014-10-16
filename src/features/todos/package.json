@@ -1,6 +1,8 @@
 {
   "exports" : [
     "model",
-    "repository"
+    "repository",
+    "service",
+    "dbox-sync"
   ]
 }
