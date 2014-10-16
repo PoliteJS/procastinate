@@ -1,11 +1,12 @@
 
 
 var service = require('./service');
+var dstore = require('./dstore');
 
 var dropboxClient;
 
 exports.init = function(config) {
-	
+
 	dropboxClient = new Dropbox.Client({
         key: config.dboxApiKey
     });
@@ -15,6 +16,7 @@ exports.init = function(config) {
     }));
 
     service.init(dropboxClient);
+    dstore.init();
 
 };
 
