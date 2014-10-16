@@ -32,7 +32,7 @@ exports.disconnect = function() {
 };
 
 exports.on = function(evt, cb) {
-	channel.on(evt, cb);
+	return channel.on(evt, cb);
 };
 
 exports.one = function(evt, cb) {
@@ -45,6 +45,17 @@ exports.onReady = function(cb) {
 	} else {
 		this.one('status-changed', cb);
 	}
+};
+
+exports.onConnected = function(cb) {
+    var self = this;
+    if (currentStatus === true) {
+        cb(self.getClient());
+    } else {
+        return this.on('connected', function() {
+            cb(self.getClient());
+        });
+    }  
 };
 
 function updateStatus(err, client) {
