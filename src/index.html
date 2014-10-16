@@ -10,11 +10,24 @@
     <!-- // Mobile -->
 	
 	<!--[CSS]-->
+    <link rel="stylesheet" href="./assets/css/bootstrap.min.css">
 	<!--[/CSS]-->
 	
 </head>
 
 <body>
+    
+    <!-- App Template -->
+    <br>
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <x-dbox-connect></x-dbox-connect>        
+                <x-todos-form></x-todos-form>
+                <x-todos-list></x-todos-list>
+            </div>
+        </div>
+    </div>
     
     <!--[LIB]-->
     <script src="./assets/js/dropbox-datastores-1.2-latest.js"></script>
