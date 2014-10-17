@@ -25,3 +25,5 @@ exports.start = function() {
 };
 
 exports.service = service;
+
+exports.store = dstore;

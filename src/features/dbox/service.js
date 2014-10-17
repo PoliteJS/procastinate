@@ -43,19 +43,38 @@ exports.onReady = function(cb) {
 	if (currentStatus !== null) {
 		cb(currentStatus);
 	} else {
-		this.one('status-changed', cb);
+		this.one('^status-changed', cb);
 	}
 };
 
-exports.onConnected = function(cb) {
+exports.onConnect = function(cb) {
     var self = this;
     if (currentStatus === true) {
         cb(self.getClient());
-    } else {
-        return this.on('connected', function() {
-            cb(self.getClient());
-        });
-    }  
+    }
+    return this.on('^connected', function() {
+        cb(self.getClient());
+    });
+};
+
+exports.onDisonnect = function(cb) {
+    var self = this;
+    if (currentStatus === false) {
+        cb(self.getClient());
+    }
+    return this.on('^disconnected', function() {
+        cb(self.getClient());
+    }); 
+};
+
+exports.watchStatus = function(cb) {
+    var ticket = this.on('status-changed', cb);
+    this.onReady(cb);
+    return {
+        dispose: function() {
+            ticket.dispose();
+        }
+    };
 };
 
 function updateStatus(err, client) {

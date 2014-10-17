@@ -55,7 +55,7 @@ exports.getStore = function(sid, cb) {
 		sid = null;
 	}
 
-	service.onConnected(function(client) {
+	service.onConnect(function(client) {
 		var mgr = client.getDatastoreManager();
 
 		function handler(err, datastore) {
