@@ -11,6 +11,8 @@ var repository = require('./repository');
 
 exports.init = init;
 
+exports.start = start;
+
 exports.createTodo = createTodo;
 
 exports.removeTodo = removeTodo;
@@ -30,6 +32,27 @@ var channel;
 
 function init() {
 	channel = subscribable.create();
+}
+
+function start() {
+	var subs = {};
+
+	function changeHandler(model, before) {
+		channel.emit('data:changed:todo:' + model.id, model, before);
+	}
+
+	function addHandler(model) {
+		subs[model.id] = model.on('^change$', changeHandler);
+	}
+
+	function removeHandler(model) {
+		subs[model.id].dispose();
+		subs[model.id] = null;
+	}
+
+	repository.list().forEach(addHandler);
+	channel.on('added:todo', addHandler);
+	channel.on('removed:todo', removeHandler);
 }
 
 function on(evt, cb) {
@@ -58,24 +81,42 @@ function removeTodo(todo, synced) {
 	}
 }
 
+/**
+ * Communicate list related changes 
+ * add, remove, change(list)
+ */
 function watch(cb) {
 	var t1, t2;
-	repository.list().forEach(function(model) {
-		cb('add', model);
-	});
+	var subs = {};
 
-	t1 = channel.on('^added:todo', function(model) {
-		cb('add', model);
-	});
+	function changeHandler(model, before) {
+		cb('change', model, before);
+	}
 
-	t2 = channel.on('^removed:todo', function(model) {
+	function addHandler(model) {
+		cb('add', model);
+		subs[model.id] = model.on('change:list$', changeHandler);
+	}
+
+	function removeHandler(model) {
 		cb('remove', model);
-	});
+		subs[model.id].dispose();
+		subs[model.id] = null;
+	}
+
+	repository.list().forEach(addHandler);
+	t1 = channel.on('^added:todo', addHandler);
+	t2 = channel.on('^removed:todo', removeHandler);
 
 	return {
 		dispose: function() {
 			t1.dispose();
 			t2.dispose();
+			Object.keys(subs).forEach(function(k) {
+				if (subs[k]) {
+					subs[k].dispose();
+				}
+			});
 		}
 	};
 }

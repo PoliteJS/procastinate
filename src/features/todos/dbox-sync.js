@@ -1,5 +1,6 @@
 
-var dataStore = require('dbox/dstore');
+var dbox = require('dbox');
+// var dataStore = require('dbox/dstore');
 var repository = require('./repository');
 var service = require('./service');
 
@@ -26,20 +27,34 @@ function init() {
 }
 
 function start() {
-	dataStore.open();
-	dataStore.onReady(function(store) {
-		todosTable = store.getTable('todos2');
-		
-		sync();
+	var s1, s2, s3, store;
 
-		service.on('data:added:todo', syncLocalModel);
-		service.on('data:removed:todo', removeRemoteRecord);
+	function recordsChangedHandler(event) {
+		event.affectedRecordsForTable('todos2').forEach(syncRemoteRecord);
+	}
 
-		// live sync updates
-		store.recordsChanged.addListener(function(event) {
-			event.affectedRecordsForTable('todos2').forEach(syncRemoteRecord);
+	dbox.service.onConnect(function() {
+		dbox.store.open();
+		dbox.store.onReady(function(store) {
+
+			todosTable = store.getTable('todos2');
+			sync();
+
+			s1 = service.on('data:added:todo', syncLocalModel);
+			s2 = service.on('data:changed:todo', syncLocalModel);
+			s3 = service.on('data:removed:todo', removeRemoteRecord);
+
+			// live sync updates
+			store.recordsChanged.addListener(recordsChangedHandler);
 		});
 	});
+	
+	dbox.service.onDisonnect(function() {
+		todosTable = null;
+		s1 && s1.dispose();
+		s2 && s2.dispose();
+		s3 && s3.dispose();
+	});	
 };
 
 function sync() {

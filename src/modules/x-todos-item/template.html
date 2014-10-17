@@ -1,1 +1,5 @@
-<li data-bind="text:model.getTitle(),click:remove"></li>
+<li data-bind="
+	text:model.getTitle(),
+	css: {'done':isDone},
+	click:toggle
+	"></li>

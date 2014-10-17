@@ -11,6 +11,7 @@ exports.init = function() {
 };
 
 exports.start = function() {
+	service.start();
 	dboxSync.start();	
 };
 
